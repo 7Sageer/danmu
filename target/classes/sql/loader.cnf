@@ -1,0 +1,4 @@
+host = localhost
+database = danmu
+user = postgres
+password = 747576

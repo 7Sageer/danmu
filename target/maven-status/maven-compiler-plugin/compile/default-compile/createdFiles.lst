@@ -1,0 +1,6 @@
+sql\User.class
+sql\ErrorCollector.class
+sql\veryGoodLoader.class
+sql\App.class
+sql\Usereader.class
+sql\GoodLoader.class
