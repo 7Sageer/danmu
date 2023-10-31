@@ -58,8 +58,8 @@ public class Upload {
 		if (con != null) {
 		stmt = con.createStatement();
 		stmt.execute("TRUNCATE danmu cascade");
-		//stmt.execute("truncate video_info,video_action, video_status, video_view CASCADE");
-		//stmt.execute("truncate table TABLE user_info, user_role, user_following, cascade");
+		stmt.execute("truncate video_info,video_action, video_status, video_view CASCADE");
+		stmt.execute("truncate table TABLE user_info, user_role, user_following, cascade");
 		stmt.close();
 		}
 		con.setAutoCommit(false);
