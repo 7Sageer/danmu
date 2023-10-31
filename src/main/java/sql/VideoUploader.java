@@ -1,7 +1,6 @@
 package sql;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -32,10 +31,10 @@ public class VideoUploader {
 		new Thread(() -> {
 			try {
 				while (vr.peek() != null) {
-
 					queue.put(Reader.readVideos(BATCHNUM, errorCollector, vr));
 					while (queue.size() > 10) {
 						Thread.sleep(100);
+						System.out.print("Waiting for updating");
 					}
 				}
 				isEnd.set(true);
@@ -166,9 +165,6 @@ public class VideoUploader {
 						System.out.println(i.getValue());
 					}
 					count++;
-					if (count % 100 == 0) {
-						video_view.executeBatch();
-					}
 				}
 				video_view.executeBatch();
 			}
@@ -180,9 +176,6 @@ public class VideoUploader {
 					video_action.setString(3, "like");
 					video_action.addBatch();
 					count++;
-					if (count % 100 == 0) {
-						video_action.executeBatch();
-					}
 				}
 				video_action.executeBatch();
 			} else {
@@ -196,9 +189,6 @@ public class VideoUploader {
 					video_action.setString(3, "coin");
 					video_action.addBatch();
 					count++;
-					if (count % 100 == 0) {
-						video_action.executeBatch();
-					}
 				}
 				video_action.executeBatch();
 			} else {
@@ -212,9 +202,6 @@ public class VideoUploader {
 					video_action.setString(3, "favorite");
 					video_action.addBatch();
 					count++;
-					if (count % 100 == 0) {
-						video_action.executeBatch();
-					}
 				}
 				video_action.executeBatch();
 			} else {
