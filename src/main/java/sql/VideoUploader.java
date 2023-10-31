@@ -1,24 +1,29 @@
 package sql;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.opencsv.CSVReader;
 
 public class VideoUploader {
-    public static void uploadVideos(ErrorCollector errorCollector, CSVReader vr,int threadNum,int BATCHNUM) throws IOException {
-        BlockingQueue<ArrayList<Video>> queue = new LinkedBlockingQueue<>();
+	public static void uploadVideos(ErrorCollector errorCollector, CSVReader vr, int threadNum, int BATCHNUM)
+			throws IOException {
+		BlockingQueue<ArrayList<Video>> queue = new LinkedBlockingQueue<>();
 		// total = Files.lines(Paths.get("data\\videos.csv")).count();
 		int total = 7865;
 		System.out.println(total);
@@ -80,9 +85,26 @@ public class VideoUploader {
 				return;
 			}
 		};
+		List<Future<?>> futures = new ArrayList<>();
+		for (int i = 0; i < threadNum; i++) {
+			futures.add(executor.submit(task));
+		}
+		System.out.println("Start uploading videos");
 
 		while (true) {
-			executor.execute(task);
+			Iterator<Future<?>> iterator = futures.iterator();
+			List<Future<?>> newFutures = new ArrayList<>();
+
+			while (iterator.hasNext()) {
+				Future<?> future = iterator.next();
+				if (future.isDone() || future.isCancelled()) {
+					iterator.remove(); // 删除当前元素
+					newFutures.add(executor.submit(task)); // 向临时列表添加新元素
+				}
+			}
+
+			futures.addAll(newFutures); // 把新任务添加到主列表
+
 			if (queue.peek() == null && isEnd.get()) {
 				executor.shutdown();
 				break;
@@ -95,9 +117,9 @@ public class VideoUploader {
 		progressBar.end();
 		vr.close();
 		errorCollector.displayErrors();
-    }
+	}
 
-    private static void uploadVideo(Video video, ErrorCollector errorCollector, PreparedStatement video_info,
+	private static void uploadVideo(Video video, ErrorCollector errorCollector, PreparedStatement video_info,
 			PreparedStatement video_action, PreparedStatement video_status, PreparedStatement video_view) {
 		if (!Video.check(video)) {
 			return;
