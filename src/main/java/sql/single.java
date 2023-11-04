@@ -31,7 +31,7 @@ public class single {
 	private static CSVReader ur;
 	private static CSVReader vr;
 	public static ErrorCollector errorCollector = new ErrorCollector();
-	final static int BATCHNUM = 100;
+	final static int BATCHNUM = 10;
 
 	public static void main(String[] args) throws SQLException, CsvValidationException, IOException {
 
@@ -40,24 +40,24 @@ public class single {
 		long total;
 		total = Files.lines(Paths.get("data\\users.csv")).count();
 		progressBar = new ProgressBar(total);
-		while (ur.peek() != null) {
-		ArrayList<User> users = Reader.readUsers(BATCHNUM, errorCollector, ur);
+		// while (ur.peek() != null) {
+		// 	ArrayList<User> users = Reader.readUsers(BATCHNUM, errorCollector, ur);
 
-		for (User i : users) {
-		if (User.check(i)) {
-		uploadUser(i, errorCollector);
-		}
-		}
-		user_info.executeBatch();
-		user_role.executeBatch();
-		user_following.executeBatch();
-		System.out.printf("%d lines read.", progressBar.getcurrent());
-		progressBar.update(BATCHNUM);
-		}
-		progressBar.end();
-		ur.close();
-		con.commit();
-		errorCollector.displayErrors();
+		// 	for (User i : users) {
+		// 		if (User.check(i)) {
+		// 			uploadUser(i, errorCollector);
+		// 		}
+		// 	}
+		// 	user_info.executeBatch();
+		// 	user_role.executeBatch();
+		// 	user_following.executeBatch();
+		// 	System.out.printf("%d lines read.", progressBar.getcurrent());
+		// 	progressBar.update(BATCHNUM);
+		// }
+		// progressBar.end();
+		// ur.close();
+		// con.commit();
+		// errorCollector.displayErrors();
 
 		total = Files.lines(Paths.get("data\\videos.csv")).count();
 		progressBar = new ProgressBar(total);
@@ -188,7 +188,8 @@ public class single {
 		Statement stmt;
 		if (con != null) {
 			stmt = con.createStatement();
-			stmt.execute("TRUNCATE TABLE user_info, user_role, user_following, video_info, video_action, video_status, video_view CASCADE");
+			stmt.execute(
+					"TRUNCATE TABLE user_info, user_role, user_following, video_info, video_action, video_status, video_view CASCADE");
 			stmt.close();
 		}
 		con.setAutoCommit(false);

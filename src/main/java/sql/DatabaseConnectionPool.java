@@ -48,6 +48,8 @@ public class DatabaseConnectionPool {
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.setIdleTimeout(1000);
+        config.setConnectionTimeout(0);
         ds = new HikariDataSource(config);
     }
 }

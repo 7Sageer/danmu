@@ -34,7 +34,7 @@ public class VideoUploader {
 					queue.put(Reader.readVideos(BATCHNUM, errorCollector, vr));
 					while (queue.size() > 10) {
 						Thread.sleep(100);
-						System.out.print("Waiting for updating");
+						//System.out.print("Waiting for updating");
 					}
 				}
 				isEnd.set(true);
