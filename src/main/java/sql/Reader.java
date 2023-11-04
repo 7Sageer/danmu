@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class Reader {
-    private static int errorCount = 0;
 
     public static ArrayList<User> readUsers(int n, ErrorCollector errorCollector, CSVReader reader) {
         ArrayList<User> users = new ArrayList<>();
@@ -95,7 +94,6 @@ public class Reader {
                         System.out.println();
                         if(nextLine.length >= 4)
                             System.out.println("Invalid input for danmu data: "  + '\n' + nextLine[3].substring(0,150));
-                        errorCount++;
                         continue;
 
                     }
