@@ -28,12 +28,12 @@ public class Upload {
 
 		initialization();
 		DatabaseConnectionPool.InitializeDBCPool();
-		//UserUploader.uploadUsers(errorCollector, 500, ur);
+		UserUploader.uploadUsers(errorCollector, 500, ur);
 
-		VideoUploader.uploadVideos(errorCollector, vr, THREADNUM, 10);
+		//VideoUploader.uploadVideos(errorCollector, vr, THREADNUM, 10);
 
-		//DanmuUploader.uploadDanmus(errorCollector, 5000, dr);
-
+		DanmuUploader.uploadDanmus(errorCollector, 5000, dr);
+		errorCollector.displayErrors();
 		closeDB();
 	}
 
@@ -57,9 +57,9 @@ public class Upload {
 		Statement stmt;
 		if (con != null) {
 		stmt = con.createStatement();
-		//stmt.execute("TRUNCATE danmu cascade");
-		stmt.execute("truncate video_info,video_action, video_status, video_view CASCADE");
-		//stmt.execute("truncate table user_info, user_role, user_following cascade");
+		stmt.execute("TRUNCATE danmu cascade");
+		//stmt.execute("truncate video_info,video_action, video_status, video_view CASCADE");
+		stmt.execute("truncate table user_info, user_role, user_following cascade");
 		stmt.close();
 		}
 		con.setAutoCommit(false);

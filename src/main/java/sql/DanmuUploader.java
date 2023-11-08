@@ -7,112 +7,43 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.opencsv.CSVReader;
 
 public class DanmuUploader {
-
+    
     public static void uploadDanmus(ErrorCollector errorCollector, int batchNum, CSVReader dr) throws IOException {
         try {
-            int threadNum = 20;
             ProgressBar progressBar;
             long total;
+            Connection con = DatabaseConnectionPool.getConnection();
+            con.setAutoCommit(false);
             total = Files.lines(Paths.get("data\\danmu1.csv")).count();
             progressBar = new ProgressBar(total);
-            AtomicBoolean isEnd = new AtomicBoolean(false);
-            BlockingQueue<ArrayList<Danmu>> queue = new LinkedBlockingQueue<>();
-            new Thread(() -> {
-                try {
-                    while (dr.peek() != null) {
-                        queue.put(Reader.readDanmus(batchNum, errorCollector, dr));
-                        while (queue.size() > 10) {
-                            Thread.sleep(100);
-                            // System.out.print("Waiting for updating");
-                        }
-                    }
-                    isEnd.set(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
+            PreparedStatement danmu_info = con
+                    .prepareStatement("insert into danmu(id,video_id,user_id, time, content)"
+                            + "values(?,?,?,?,?)");
+            while (dr.peek() != null) {
+                ArrayList<Danmu> danmus = Reader.readDanmus(batchNum, errorCollector, dr);
+
+                for (Danmu i : danmus) {
+                    uploadDanmu(i, errorCollector, danmu_info);
                 }
-            }).start();
-            ExecutorService executor = Executors.newFixedThreadPool(threadNum);
-            Runnable task = () -> {
-                try (Connection threadCon = DatabaseConnectionPool.getConnection()) {
-                    ArrayList<Danmu> danmus = queue.take();
-                    threadCon.setAutoCommit(false);
-                    PreparedStatement danmu_info = threadCon
-                            .prepareStatement("insert into danmu_info(danmu_id, video_id, user_id, time, content)"
-                                    + "values(?,?,?,?,?)");
-                    for (Danmu i : danmus) {
-                        uploadDanmu(i, errorCollector, danmu_info);
-                    }
-                    System.out.printf("%d lines read.", progressBar.getcurrent());
-                    synchronized (progressBar) {
-                        progressBar.update(batchNum);
-                    }
-                    threadCon.commit();
-                    threadCon.close();
-                } catch (SQLException e) {
-                    System.out.println(e.toString());
-                    e.printStackTrace();
-                    return;
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    return;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return;
-                }
-            };
-            List<Future<?>> futures = new ArrayList<>();
-            for (int i = 0; i < threadNum; i++) {
-                futures.add(executor.submit(task));
+                danmu_info.executeBatch();
+                System.out.printf("%d lines read.", progressBar.getcurrent());
+                progressBar.update(batchNum);
             }
-            System.out.println("Start uploading danmus");
-
-            while (true) {
-                Iterator<Future<?>> iterator = futures.iterator();
-                List<Future<?>> newFutures = new ArrayList<>();
-
-                while (iterator.hasNext()) {
-                    Future<?> future = iterator.next();
-                    if (future.isDone() || future.isCancelled()) {
-                        iterator.remove(); // 删除当前元素
-                        newFutures.add(executor.submit(task)); // 向临时列表添加新元素
-                    }
-                }
-
-                futures.addAll(newFutures); // 把新任务添加到主列表
-
-                if (queue.peek() == null && isEnd.get()) {
-                    executor.shutdown();
-                    break;
-                }
-            }
-
-            progressBar.end();
-
-            System.out.printf("%d lines read.", progressBar.getcurrent());
             progressBar.end();
             dr.close();
-            errorCollector.displayErrors();
-            return;
-        } catch (Exception e) {
-            e.printStackTrace();
+            con.commit();
+        } catch (SQLException e) {
+            System.out.println(e.toString());
         }
     }
 
     private static void uploadDanmu(Danmu danmu, ErrorCollector errorCollector, PreparedStatement danmu_info) {
         try {
-            if (danmu.id == 0) {
+            if(danmu.id == 0){
                 return;
             }
             danmu_info.setLong(1, danmu.id);

@@ -59,13 +59,17 @@ public class UserUploader {
                                     + "values(?,?)");
                     for (User i : users) {
                         uploadUser(i, errorCollector, user_info, user_role, user_following);
+                        user_following.executeBatch();
+                        user_info.executeBatch();
+                        user_role.executeBatch();
+                        
                     }
+                    threadCon.commit();
                     System.out.printf("%d lines read.", progressBar.getcurrent());
                     synchronized (progressBar) {
                         progressBar.update(batchNum);
                     }
-                    threadCon.commit();
-                    threadCon.close();
+                    
                 } catch (SQLException e) {
                     System.out.println(e.toString());
                     e.printStackTrace();
@@ -104,15 +108,16 @@ public class UserUploader {
                 }
             }
 
-            progressBar.end();
 
             System.out.printf("%d lines read.", progressBar.getcurrent());
-            progressBar.end();
+            
             ur.close();
-            errorCollector.displayErrors();
+            //errorCollector.displayErrors();
+            progressBar.end();
             return;
         } catch (Exception e) {
             e.printStackTrace();
+            return;
         }
     }
 
