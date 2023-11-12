@@ -40,24 +40,24 @@ public class single {
 		long total;
 		total = Files.lines(Paths.get("data\\users.csv")).count();
 		progressBar = new ProgressBar(total);
-		// while (ur.peek() != null) {
-		// 	ArrayList<User> users = Reader.readUsers(BATCHNUM, errorCollector, ur);
+		while (ur.peek() != null) {
+			ArrayList<User> users = Reader.readUsers(BATCHNUM, errorCollector, ur);
 
-		// 	for (User i : users) {
-		// 		if (User.check(i)) {
-		// 			uploadUser(i, errorCollector);
-		// 		}
-		// 	}
-		// 	user_info.executeBatch();
-		// 	user_role.executeBatch();
-		// 	user_following.executeBatch();
-		// 	System.out.printf("%d lines read.", progressBar.getcurrent());
-		// 	progressBar.update(BATCHNUM);
-		// }
-		// progressBar.end();
-		// ur.close();
-		// con.commit();
-		// errorCollector.displayErrors();
+			for (User i : users) {
+				if (User.check(i)) {
+					uploadUser(i, errorCollector);
+				}
+			}
+			user_info.executeBatch();
+			user_role.executeBatch();
+			user_following.executeBatch();
+			System.out.printf("%d lines read.", progressBar.getcurrent());
+			progressBar.update(BATCHNUM);
+		}
+		progressBar.end();
+		ur.close();
+		con.commit();
+		errorCollector.displayErrors();
 
 		total = Files.lines(Paths.get("data\\videos.csv")).count();
 		progressBar = new ProgressBar(total);

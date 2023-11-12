@@ -33,10 +33,6 @@ public class UserUploader {
                 try {
                     while (ur.peek() != null) {
                         queue.put(Reader.readUsers(batchNum, errorCollector, ur));
-                        while (queue.size() > 10) {
-                            Thread.sleep(100);
-                            // System.out.print("Waiting for updating");
-                        }
                     }
                     isEnd.set(true);
                 } catch (Exception e) {
@@ -62,7 +58,6 @@ public class UserUploader {
                         user_following.executeBatch();
                         user_info.executeBatch();
                         user_role.executeBatch();
-                        
                     }
                     threadCon.commit();
                     System.out.printf("%d lines read.", progressBar.getcurrent());
